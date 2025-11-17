@@ -54,7 +54,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     if (value == null || value.trim().isEmpty) {
                       return "Будь ласка, введіть ваше ім'я.";
                     }
-                    return null; // Все добре
+                    return null;
                   },
                 ),
                 const SizedBox(height: 16.0),
@@ -94,7 +94,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     if (password.length < 7) {
                       return 'Пароль повинен бути не менше 7 символів.';
                     }
-                    return null; // Все добре
+                    return null;
                   },
                 ),
                 const SizedBox(height: 24.0),
@@ -114,9 +114,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             actions: [
                               TextButton(
                                 onPressed: () {
-                                  Navigator.of(ctx).pop(); // Закриваємо діалог
+                                  Navigator.of(ctx).pop();
                                   Navigator.pop(
-                                      context); // Повертаємо на екран логіну
+                                      context);
                                 },
                                 child: const Text('OK'),
                               ),

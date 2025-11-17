@@ -39,7 +39,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 32.0),
 
                 TextFormField(
-                  // controller: НЕМАЄ
                   decoration: const InputDecoration(
                     labelText: 'Логін (Email)',
                     prefixIcon: Icon(Icons.person_outline),
@@ -59,7 +58,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 16.0),
 
                 TextFormField(
-                  // controller: НЕМАЄ
                   decoration: const InputDecoration(
                     labelText: 'Пароль',
                     prefixIcon: Icon(Icons.lock_outline),
@@ -76,8 +74,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 ElevatedButton(
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
-                      // Валідація пройшла успішно.
-                      // Оскільки нам не потрібні дані, просто показуємо успіх
                       showDialog(
                         context: context,
                         builder: (BuildContext ctx) {
