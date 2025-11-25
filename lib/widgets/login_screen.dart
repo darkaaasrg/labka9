@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dio/dio.dart';
 
 
 class LoginScreen extends StatefulWidget {
@@ -11,10 +12,92 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
 
+  // 1. КОНТРОЛЕРИ ДЛЯ ПОЛІВ
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  // -----------------------------------------------------------------------------
+  // 2. КОНФІГУРАЦІЯ DIO ТА ФУНКЦІЯ ВІДПРАВКИ
+  // -----------------------------------------------------------------------------
+  final Dio dio = Dio();
+  // !!! Ваш субдомен: https://laba12.requestcatcher.com/ !!!
+  static const String requestCatcherBaseUrl = 'https://laba12.requestcatcher.com/';
+
+  Future<void> sendLoginData() async {
+    final String email = _emailController.text.trim();
+    final String password = _passwordController.text;
+
+    final url = requestCatcherBaseUrl + 'login'; // Ендпоінт /login
+
+    final Map<String, dynamic> data = {
+      'email': email,
+      'password': password,
+    };
+
+    try {
+      final response = await dio.post(
+        url,
+        data: data,
+        options: Options(contentType: 'application/json'),
+      );
+
+      if (response.statusCode == 200) {
+        print('✅ Успішно! Дані Login відправлені на Request Catcher.');
+        // Викликаємо діалогове вікно про успіх ПІСЛЯ успішної відправки
+        _showSuccessDialog();
+      } else {
+        print('❌ Помилка: Неочікуваний код відповіді ${response.statusCode}');
+        _showErrorDialog('Помилка сервера: ${response.statusCode}');
+      }
+    } on DioException catch (e) {
+      print('🚨 Помилка Dio (Login): ${e.message}');
+      _showErrorDialog('Помилка мережі. Перевірте з\'єднання.');
+    }
+  }
+
+  // -----------------------------------------------------------------------------
+  // 3. ДОПОМІЖНІ ФУНКЦІЇ UI
+  // -----------------------------------------------------------------------------
+
+  void _showSuccessDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext ctx) {
+        return AlertDialog(
+          title: const Text('Успіх'),
+          content: const Text('Дані входу відправлено на Request Catcher.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showErrorDialog(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Помилка відправки даних: $message'),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
+
   bool _isValidEmail(String email) {
     final emailRegex =
     RegExp(r"^[a-zA-Z0-9.]+@[a-zA-Z0-9]+\.[a-zA-Z]+");
     return emailRegex.hasMatch(email);
+  }
+
+  @override
+  void dispose() {
+    // Очищення контролерів
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
   }
 
   @override
@@ -38,7 +121,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     size: 100, color: Theme.of(context).primaryColor),
                 const SizedBox(height: 32.0),
 
+                // --- ПОЛЕ EMAIL (ЗМІНЕНО: додано controller) ---
                 TextFormField(
+                  controller: _emailController, // Підключаємо контролер
                   decoration: const InputDecoration(
                     labelText: 'Логін (Email)',
                     prefixIcon: Icon(Icons.person_outline),
@@ -52,12 +137,14 @@ class _LoginScreenState extends State<LoginScreen> {
                     if (!_isValidEmail(email)) {
                       return 'Будь ласка, введіть коректний Email.';
                     }
-                    return null; // Все добре
+                    return null;
                   },
                 ),
                 const SizedBox(height: 16.0),
 
+                // --- ПОЛЕ PASSWORD (ЗМІНЕНО: додано controller) ---
                 TextFormField(
+                  controller: _passwordController, // Підключаємо контролер
                   decoration: const InputDecoration(
                     labelText: 'Пароль',
                     prefixIcon: Icon(Icons.lock_outline),
@@ -67,26 +154,22 @@ class _LoginScreenState extends State<LoginScreen> {
                     if (value == null || value.isEmpty) {
                       return 'Будь ласка, введіть пароль.';
                     }
-                    return null; // Все добре
+                    return null;
                   },
                 ),
                 const SizedBox(height: 24.0),
+
+                // --- КНОПКА "УВІЙТИ" (ОНОВЛЕНО: логіка відправки) ---
                 ElevatedButton(
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
-                      showDialog(
-                        context: context,
-                        builder: (BuildContext ctx) {
-                          return const AlertDialog(
-                            title: Text('Успіх'),
-                            content: Text('Вхід виконано.'),
-                          );
-                        },
-                      );
+                      // Викликаємо функцію відправки даних
+                      sendLoginData();
                     }
                   },
                   child: const Text('Увійти'),
                 ),
+
                 const SizedBox(height: 16.0),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dio/dio.dart';
 
 class PasswordRecoveryScreen extends StatefulWidget {
   const PasswordRecoveryScreen({Key? key}) : super(key: key);
@@ -10,6 +11,65 @@ class PasswordRecoveryScreen extends StatefulWidget {
 class _PasswordRecoveryScreenState extends State<PasswordRecoveryScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _loginController = TextEditingController();
+
+  final Dio dio = Dio();
+  static const String requestCatcherBaseUrl = 'https://laba12.requestcatcher.com/';
+
+  Future<void> sendResetPasswordData() async {
+    final String email = _loginController.text.trim();
+
+    final url = requestCatcherBaseUrl + 'resetpassword';
+
+    final Map<String, dynamic> data = {
+      'email': email,
+    };
+
+    try {
+      final response = await dio.post(
+        url,
+        data: data,
+        options: Options(contentType: 'application/json'),
+      );
+
+      if (response.statusCode == 200) {
+        print(' Успішно! Дані Reset Password відправлені на Request Catcher.');
+        _showSuccessDialog(email);
+      } else {
+        print('Помилка: Неочікуваний код відповіді ${response.statusCode}');
+        _showErrorDialog('Помилка сервера: ${response.statusCode}');
+      }
+    } on DioException catch (e) {
+      print('Помилка Dio (Reset): ${e.message}');
+      _showErrorDialog('Помилка мережі. Перевірте з\'єднання.');
+    }
+  }
+
+  void _showSuccessDialog(String email) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Готово'),
+        content: Text(
+          'Інструкції для відновлення паролю надіслані на адресу: $email. Дані відправлено на Request Catcher.',
+        ),
+        actions: [
+          TextButton(
+            child: const Text('OK'),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showErrorDialog(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Помилка відправки даних: $message'),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
 
   bool _isValidEmail(String email) {
     final emailRegex =
@@ -61,34 +121,20 @@ class _PasswordRecoveryScreenState extends State<PasswordRecoveryScreen> {
                     if (!_isValidEmail(email)) {
                       return 'Будь ласка, введіть коректний Email.';
                     }
-                    return null; // Все добре
+                    return null;
                   },
                 ),
                 const SizedBox(height: 24.0),
+
                 ElevatedButton(
                   child: const Text('Скинути пароль'),
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
-                      final email = _loginController.text.trim();
-
-                      showDialog(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          title: const Text('Готово'),
-                          content: Text(
-                            'Інструкції для відновлення паролю надіслані на адресу: $email',
-                          ),
-                          actions: [
-                            TextButton(
-                              child: const Text('OK'),
-                              onPressed: () => Navigator.pop(context),
-                            ),
-                          ],
-                        ),
-                      );
+                      sendResetPasswordData();
                     }
                   },
                 ),
+
                 const SizedBox(height: 16.0),
                 TextButton(
                   child: const Text('Повернутися до авторизації'),

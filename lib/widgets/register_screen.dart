@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dio/dio.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({Key? key}) : super(key: key);
@@ -13,6 +14,75 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _loginController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+
+
+  final Dio dio = Dio();
+  static const String requestCatcherBaseUrl = 'https://laba12.requestcatcher.com/';
+
+  Future<void> sendSignUpData() async {
+    final String username = _nameController.text.trim();
+    final String email = _loginController.text.trim();
+    final String password = _passwordController.text; // Пароль не trim'уємо
+
+    final url = requestCatcherBaseUrl + 'signup'; // Використовуємо /signup ендпоінт
+
+    final Map<String, dynamic> data = {
+      'username': username,
+      'email': email,
+      'password': password,
+    };
+
+    try {
+      final response = await dio.post(
+        url,
+        data: data,
+        options: Options(contentType: 'application/json'),
+      );
+
+      if (response.statusCode == 200) {
+        print('Успішно! Дані Sign Up відправлені на Request Catcher.');
+        _showSuccessDialog(username);
+      } else {
+        print('Помилка: Неочікуваний код відповіді ${response.statusCode}');
+        _showErrorDialog('Помилка сервера: ${response.statusCode}');
+      }
+    } on DioException catch (e) {
+      print('Помилка Dio: ${e.message}');
+      _showErrorDialog('Помилка мережі. Перевірте з\'єднання.');
+    }
+  }
+
+  void _showSuccessDialog(String name) {
+    showDialog(
+      context: context,
+      builder: (BuildContext ctx) {
+        return AlertDialog(
+          title: const Text('Успішна реєстрація'),
+          content: Text(
+              "Вітаємо, $name! Ваш обліковий запис створено та дані відправлено на Request Catcher."),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(ctx).pop();
+                Navigator.pop(context);
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showErrorDialog(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Помилка відправки даних: $message'),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
+
 
   bool _isValidEmail(String email) {
     final emailRegex =
@@ -74,7 +144,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     if (!_isValidEmail(email)) {
                       return 'Будь ласка, введіть коректний Email.';
                     }
-                    return null; // Все добре
+                    return null;
                   },
                 ),
                 const SizedBox(height: 16.0),
@@ -98,36 +168,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   },
                 ),
                 const SizedBox(height: 24.0),
+
                 ElevatedButton(
                   child: const Text('Зареєструватися'),
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
-                      final name = _nameController.text.trim();
-
-                      showDialog(
-                        context: context,
-                        builder: (BuildContext ctx) {
-                          return AlertDialog(
-                            title: const Text('Успішна реєстрація'),
-                            content: Text(
-                                "Вітаємо, $name! Ваш обліковий запис створено."),
-                            actions: [
-                              TextButton(
-                                onPressed: () {
-                                  Navigator.of(ctx).pop();
-                                  Navigator.pop(
-                                      context);
-                                },
-                                child: const Text('OK'),
-                              ),
-                            ],
-                          );
-                        },
-                      );
+                      sendSignUpData();
                     }
-                    // 'else' не потрібен
                   },
                 ),
+
                 const SizedBox(height: 16.0),
                 OutlinedButton(
                   child: const Text('Повернутися до авторизації'),
