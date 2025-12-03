@@ -38,7 +38,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (response.statusCode == 200) {
         print('Успішно! Дані Login відправлені на Request Catcher.');
-        // Викликаємо діалогове вікно про успіх ПІСЛЯ успішної відправки
+
         _showSuccessDialog();
       } else {
         print('Помилка: Неочікуваний код відповіді ${response.statusCode}');
