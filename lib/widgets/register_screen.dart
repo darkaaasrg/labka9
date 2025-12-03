@@ -22,9 +22,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Future<void> sendSignUpData() async {
     final String username = _nameController.text.trim();
     final String email = _loginController.text.trim();
-    final String password = _passwordController.text; // Пароль не trim'уємо
+    final String password = _passwordController.text;
 
-    final url = requestCatcherBaseUrl + 'signup'; // Використовуємо /signup ендпоінт
+    final url = requestCatcherBaseUrl + 'signup';
 
     final Map<String, dynamic> data = {
       'username': username,

@@ -12,22 +12,17 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
 
-  // 1. КОНТРОЛЕРИ ДЛЯ ПОЛІВ
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  // -----------------------------------------------------------------------------
-  // 2. КОНФІГУРАЦІЯ DIO ТА ФУНКЦІЯ ВІДПРАВКИ
-  // -----------------------------------------------------------------------------
   final Dio dio = Dio();
-  // !!! Ваш субдомен: https://laba12.requestcatcher.com/ !!!
   static const String requestCatcherBaseUrl = 'https://laba12.requestcatcher.com/';
 
   Future<void> sendLoginData() async {
     final String email = _emailController.text.trim();
     final String password = _passwordController.text;
 
-    final url = requestCatcherBaseUrl + 'login'; // Ендпоінт /login
+    final url = requestCatcherBaseUrl + 'login';
 
     final Map<String, dynamic> data = {
       'email': email,
@@ -42,22 +37,18 @@ class _LoginScreenState extends State<LoginScreen> {
       );
 
       if (response.statusCode == 200) {
-        print('✅ Успішно! Дані Login відправлені на Request Catcher.');
+        print('Успішно! Дані Login відправлені на Request Catcher.');
         // Викликаємо діалогове вікно про успіх ПІСЛЯ успішної відправки
         _showSuccessDialog();
       } else {
-        print('❌ Помилка: Неочікуваний код відповіді ${response.statusCode}');
+        print('Помилка: Неочікуваний код відповіді ${response.statusCode}');
         _showErrorDialog('Помилка сервера: ${response.statusCode}');
       }
     } on DioException catch (e) {
-      print('🚨 Помилка Dio (Login): ${e.message}');
+      print('Помилка Dio (Login): ${e.message}');
       _showErrorDialog('Помилка мережі. Перевірте з\'єднання.');
     }
   }
-
-  // -----------------------------------------------------------------------------
-  // 3. ДОПОМІЖНІ ФУНКЦІЇ UI
-  // -----------------------------------------------------------------------------
 
   void _showSuccessDialog() {
     showDialog(
@@ -94,7 +85,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   void dispose() {
-    // Очищення контролерів
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
@@ -121,9 +111,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     size: 100, color: Theme.of(context).primaryColor),
                 const SizedBox(height: 32.0),
 
-                // --- ПОЛЕ EMAIL (ЗМІНЕНО: додано controller) ---
                 TextFormField(
-                  controller: _emailController, // Підключаємо контролер
+                  controller: _emailController,
                   decoration: const InputDecoration(
                     labelText: 'Логін (Email)',
                     prefixIcon: Icon(Icons.person_outline),
@@ -142,9 +131,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 16.0),
 
-                // --- ПОЛЕ PASSWORD (ЗМІНЕНО: додано controller) ---
                 TextFormField(
-                  controller: _passwordController, // Підключаємо контролер
+                  controller: _passwordController,
                   decoration: const InputDecoration(
                     labelText: 'Пароль',
                     prefixIcon: Icon(Icons.lock_outline),
@@ -159,11 +147,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 24.0),
 
-                // --- КНОПКА "УВІЙТИ" (ОНОВЛЕНО: логіка відправки) ---
                 ElevatedButton(
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
-                      // Викликаємо функцію відправки даних
                       sendLoginData();
                     }
                   },
